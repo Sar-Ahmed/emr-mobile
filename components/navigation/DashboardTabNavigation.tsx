@@ -1,6 +1,6 @@
 import Dashboard from "@/app/(tabs)/dashboard";
 import Settings from "@/app/(tabs)/settings";
-import Calendar from "@/app/(tabs)/calendar";
+import Schedule from "@/app/(tabs)/schedule";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 const Tab = createBottomTabNavigator();
 type RootStackParamList = {
   Login: undefined;
-  Calender: undefined;
+  Schedule: undefined;
 };
 
 type LogoutNavigationProp = NativeStackNavigationProp<
@@ -56,7 +56,7 @@ export default function DashboardTabNavigation() {
       />
       <Tab.Screen
         name="CALENDAR"
-        component={Calendar}
+        component={Schedule}
         options={{
           tabBarIcon: ({ color }) => (
             <Ionicons name="calendar" size={20} color={color} />
