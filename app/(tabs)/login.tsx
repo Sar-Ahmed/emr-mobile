@@ -1,51 +1,66 @@
-import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
+import React, { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  Image,
+} from "react-native";
 
 type RootStackParamList = {
   Login: undefined;
-  DashboardNavigator: undefined;
+  DashboardTabNavigation: undefined;
 };
 
-type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'DashboardNavigator'>;
+type LoginScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "DashboardTabNavigation"
+>;
 
 export default function Login() {
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [missingField, setMissingField] = useState<string[]>([]);
   const navigation = useNavigation<LoginScreenNavigationProp>();
 
   const handleLogin = () => {
     let missing = [];
     if (!username) {
-      missing.push('username');
+      missing.push("username");
     } else if (!password) {
-      missing.push('password');
+      missing.push("password");
     }
     setMissingField(missing);
     if (missing.length === 0) {
-      Alert.alert('Welcome', 'Login Successful', [
-        { text: 'OK', onPress: () => navigation.navigate('DashboardNavigator') },
+      Alert.alert("Welcome", "Login Successful", [
+        {
+          text: "OK",
+          onPress: () => navigation.navigate("DashboardTabNavigation"),
+        },
       ]);
     } else {
-      Alert.alert('Login error', `Please fill all the fields!`);
+      Alert.alert("Login error", `Please fill all the fields!`);
     }
   };
 
   return (
     <View style={styles.container}>
       <Image
-        source={require('../../assets/images/vistacan-logo.png')}
+        source={require("../../assets/images/vistacan-logo.png")}
         style={styles.logo}
       />
       <Text style={styles.title}>VISTACAN EMR</Text>
-      <View style={styles.buttonContainer}>
-      </View>
+      <View style={styles.buttonContainer}></View>
       <TextInput
         style={[
           styles.input,
-          missingField.includes('username') ? styles.inputBorderError : styles.inputBorder,
+          missingField.includes("username")
+            ? styles.inputBorderError
+            : styles.inputBorder,
         ]}
         placeholder="Username"
         value={username}
@@ -54,7 +69,9 @@ export default function Login() {
       <TextInput
         style={[
           styles.input,
-          missingField.includes('password') ? styles.inputBorderError : styles.inputBorder,
+          missingField.includes("password")
+            ? styles.inputBorderError
+            : styles.inputBorder,
         ]}
         placeholder="Password"
         value={password}
@@ -71,14 +88,14 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   buttonContainer: {
-    display: 'flex',
-    flexDirection: 'row',
+    display: "flex",
+    flexDirection: "row",
     padding: 20,
   },
   logo: {
@@ -86,33 +103,33 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   input: {
     height: 40,
-    width: '100%',
+    width: "100%",
     borderWidth: 1,
     borderRadius: 5,
     marginBottom: 20,
     paddingHorizontal: 10,
   },
   inputBorder: {
-    borderColor: '#ccc',
+    borderColor: "#ccc",
   },
   inputBorderError: {
-    borderColor: 'red',
+    borderColor: "red",
   },
   button: {
-    backgroundColor: '#007bff',
+    backgroundColor: "#007bff",
     paddingVertical: 10,
     borderRadius: 5,
-    width: '100%',
+    width: "100%",
   },
   buttonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: 'bold',
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold",
   },
 });
