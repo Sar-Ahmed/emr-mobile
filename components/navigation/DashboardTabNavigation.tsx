@@ -1,11 +1,13 @@
-import Dashboard from "@/app/(tabs)/dashboard";
-import Settings from "@/app/(tabs)/settings";
-import Schedule from "@/app/(tabs)/schedule";
+
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import React from "react";
+import Dashboard from "../../app/(tabs)/dashboard";
+import Schedule from "../../app/(tabs)/schedule";
+import Settings from "../../app/(tabs)/settings";
 
 const Tab = createBottomTabNavigator();
 type RootStackParamList = {
@@ -33,7 +35,7 @@ export default function DashboardTabNavigation() {
     <Tab.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: "blue" },
-        headerTitleStyle: { fontWeight: "bold" },
+        headerTitleStyle: { fontWeight: "bold", color: "white" },
         tabBarStyle: {
           backgroundColor: "white",
           borderTopWidth: 1,
@@ -77,3 +79,5 @@ export default function DashboardTabNavigation() {
     </Tab.Navigator>
   );
 }
+
+
