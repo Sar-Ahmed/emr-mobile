@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, FlatList } from 'react-native';
 import { Formik, FormikHelpers } from 'formik';
 import RNPickerSelect from 'react-native-picker-select';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -14,7 +14,7 @@ interface FormValues {
     selectedSensitivity: string;
     note: string;
     transcribedNote: string;
-    diagnosis: string;
+    diagnoses: string[];
     feeCode: string;
     charge: string;
     units: string;
@@ -100,6 +100,7 @@ const CreateEncounter: React.FC = () => {
             setCurrentStep(prevStep => prevStep + 1); // Go to the next step
         }
     };
+
     const goToPreviousStep = () => {
         setCurrentStep(prevStep => prevStep - 1);
     };
@@ -114,14 +115,14 @@ const CreateEncounter: React.FC = () => {
                 selectedSensitivity: '',
                 note: '',
                 transcribedNote: '',
-                diagnosis: '',
+                diagnoses: [], // Correctly typed as an empty array of strings
                 feeCode: '',
                 charge: '',
                 units: ''
             }}
             onSubmit={values => {
                 console.log('Form submitted:', values);
-                Alert.alert("Form Submitted Suceessfully!");
+                Alert.alert("Form Submitted Successfully!");
             }}
         >
             {({ setFieldValue, handleSubmit, values }) => (
@@ -203,11 +204,40 @@ const CreateEncounter: React.FC = () => {
                     )}
                     {currentStep === 3 && (
                         <View>
-                            <Text style={styles.dropDownTitle}>Diagnosis</Text>
-                            <TextInput
-                                style={styles.dropDown}
-                                value={values.diagnosis}
-                                onChangeText={(text) => setFieldValue('diagnosis', text)}
+                            <Text style={styles.dropDownTitle}>Diagnoses</Text>
+                            <FlatList
+                                data={values.diagnoses}
+                                keyExtractor={(item, index) => index.toString()}
+                                renderItem={({ item, index }) => (
+                                    <View style={styles.diagnosisItem}>
+                                        <TextInput
+                                            style={styles.diagnosisTextInput}
+                                            value={item}
+                                            onChangeText={(text) => {
+                                                const updatedDiagnoses: string[] = [...values.diagnoses];
+                                                updatedDiagnoses[index] = text;
+                                                setFieldValue('diagnoses', updatedDiagnoses);
+                                            }}
+                                        />
+                                        <View style={styles.diagnosisButtonContainer}>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    const updatedDiagnoses: string[] = values.diagnoses.filter((_, i) => i !== index);
+                                                    setFieldValue('diagnoses', updatedDiagnoses);
+                                                }}
+                                                style={styles.removeButton}
+                                            >
+                                                <Text style={styles.diagnosisButtonText}>-</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={() => setFieldValue('diagnoses', [...values.diagnoses, ''])}
+                                                style={styles.addButton}
+                                            >
+                                                <Text style={styles.diagnosisButtonText}>+</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                )}
                             />
                             <Text style={styles.dropDownTitle}>Fee Code</Text>
                             <TextInput
@@ -311,6 +341,42 @@ const styles = StyleSheet.create({
     previousButton: {
         backgroundColor: '#6c757d',
         marginRight: 10,
+    },
+    diagnosisButtonContainer: {
+        flexDirection: "row",
+        alignItems: 'center'
+    },
+    diagnosisItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        // alignItems: 'center',
+        marginVertical: 5,
+        marginHorizontal: 20,
+    },
+    diagnosisTextInput: {
+        flex: 1, // Takes up remaining space
+        borderWidth: 1,
+        borderColor: 'gray',
+        borderRadius: 4,
+        padding: 10,
+        marginRight: 10, // Adds space between input and button
+    },
+    removeButton: {
+        backgroundColor: '#dc3545',
+        borderRadius: 5,
+        paddingHorizontal: 12
+    },
+    addButton: {
+        backgroundColor: '#28a745',
+        borderRadius: 5,
+        paddingHorizontal: 12,
+        marginHorizontal: 20,
+    },
+    diagnosisButtonText: {
+        color: 'white',
+        fontSize: 36,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 });
 
