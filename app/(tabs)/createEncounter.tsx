@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, FlatList, Image } from 'react-native';
-import { Formik, FormikHelpers } from 'formik';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, FlatList, Image, ScrollView } from 'react-native';
+import { FieldArray, Formik, FormikHelpers } from 'formik';
 import RNPickerSelect from 'react-native-picker-select';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,9 +16,13 @@ interface FormValues {
     note: string;
     transcribedNote: string;
     diagnoses: string[];
-    feeCode: string;
-    charge: string;
-    units: string;
+    feeCode:
+    {
+        value: string
+        charge: string;
+        units: number;
+    }[];
+
 }
 
 const DateTimePickerComponent: React.FC<{
@@ -210,202 +214,292 @@ const CreateEncounter: React.FC = () => {
     };
 
     return (
-        <Formik
-            initialValues={{
-                selectedVisitCategory: '',
-                selectedFacility: '',
-                selectedBillingFacility: '',
-                selectedDate: null,
-                selectedSensitivity: '',
-                note: '',
-                transcribedNote: '',
-                diagnoses: [''],
-                feeCode: '',
-                charge: '',
-                units: ''
-            }}
-            onSubmit={values => {
-                Alert.alert("Form Submitted Successfully!");
-            }}
-        >
-            {({ setFieldValue, handleSubmit, values }) => (
-                <View style={styles.container}>
-                    {currentStep === 1 && (
-                        <>
-                            <ImagePickerSection
-                                imageUri={imageUri}
-                                onImagePick={handleCameraButton}
-                                onImageDelete={handleDeleteImageButton}
-                            />
-                            <DropDown
-                                title="Visit Category"
-                                placeholder="Select Category"
-                                items={visitCategory}
-                                value={values.selectedVisitCategory}
-                                onValueChange={(value) => setFieldValue('selectedVisitCategory', value)}
-                            />
-                            <DropDown
-                                title="Facility"
-                                placeholder="Select Facility"
-                                items={facilities}
-                                value={values.selectedFacility}
-                                onValueChange={(value) => setFieldValue('selectedFacility', value)}
-                            />
-                            <DropDown
-                                title="Billing Facility"
-                                placeholder="Select Billing Facility"
-                                items={facilities}
-                                value={values.selectedBillingFacility}
-                                onValueChange={(value) => setFieldValue('selectedBillingFacility', value)}
-                            />
-                            <Text style={styles.dropDownTitle}>Date of Service</Text>
-                            <TouchableOpacity onPress={() => setDatePickerVisible(true)} style={styles.datePickerButton}>
-                                <Text style={styles.datePickerText}>
-                                    {selectedDate ? selectedDate.toLocaleString() : 'Select Date & Time'}
-                                </Text>
-                            </TouchableOpacity>
+        <ScrollView>
+            <Formik
+                initialValues={{
+                    selectedVisitCategory: '',
+                    selectedFacility: '',
+                    selectedBillingFacility: '',
+                    selectedDate: null,
+                    selectedSensitivity: '',
+                    note: '',
+                    transcribedNote: '',
+                    diagnoses: [''],
+                    feeCode: [
+                        {
+                            value: '',
+                            charge: '',
+                            units: 1
+                        }
+                    ]
+                }}
+                onSubmit={values => {
+                    Alert.alert("Form Submitted Successfully!");
+                    console.log(values, "FOrm Values")
+                }}
+            >
+                {({ setFieldValue, handleSubmit, values }) => {
+                    return (
+                        <View style={styles.container}>
+                            {currentStep === 1 && (
+                                <>
+                                    <ImagePickerSection
+                                        imageUri={imageUri}
+                                        onImagePick={handleCameraButton}
+                                        onImageDelete={handleDeleteImageButton}
+                                    />
+                                    <DropDown
+                                        title="Visit Category"
+                                        placeholder="Select Category"
+                                        items={visitCategory}
+                                        value={values.selectedVisitCategory}
+                                        onValueChange={(value) => setFieldValue('selectedVisitCategory', value)}
+                                    />
+                                    <DropDown
+                                        title="Facility"
+                                        placeholder="Select Facility"
+                                        items={facilities}
+                                        value={values.selectedFacility}
+                                        onValueChange={(value) => setFieldValue('selectedFacility', value)}
+                                    />
+                                    <DropDown
+                                        title="Billing Facility"
+                                        placeholder="Select Billing Facility"
+                                        items={facilities}
+                                        value={values.selectedBillingFacility}
+                                        onValueChange={(value) => setFieldValue('selectedBillingFacility', value)}
+                                    />
+                                    <Text style={styles.dropDownTitle}>Date of Service</Text>
+                                    <TouchableOpacity onPress={() => setDatePickerVisible(true)} style={styles.datePickerButton}>
+                                        <Text style={styles.datePickerText}>
+                                            {selectedDate ? selectedDate.toLocaleString() : 'Select Date & Time'}
+                                        </Text>
+                                    </TouchableOpacity>
 
-                            {isDatePickerVisible && (
-                                <DateTimePickerComponent
-                                    mode="date"
-                                    value={selectedDate}
-                                    onChange={(event, date) => handleDateChange(event, date, setFieldValue)}
-                                />
-                            )}
-
-                            {isTimePickerVisible && (
-                                <DateTimePickerComponent
-                                    mode="time"
-                                    value={selectedDate}
-                                    onChange={(event, time) => handleTimeChange(event, time, setFieldValue)}
-                                />
-                            )}
-
-                            <DropDown
-                                title="Sensitivity"
-                                placeholder="Select Sensitivity"
-                                items={sensitivity}
-                                value={values.selectedSensitivity}
-                                onValueChange={(value) => setFieldValue('selectedSensitivity', value)}
-                            />
-                        </>
-                    )}
-                    {currentStep === 2 && (
-                        <View>
-                            <View style={styles.audioButtonContainer}>
-                                <TouchableOpacity onPress={recording ? stopRecording : startRecording} style={[styles.commonIconButton, recording ? styles.stopRecordButton : styles.iconButton]}>
-                                    {/* <TouchableOpacity onPress={recording ? stopRecording : startRecording} style={[styles.commonIconButton, recording ? styles.stopRecordButton : styles.iconButton]}> */}
-                                    {recording ? <Image style={styles.iconImage} source={require('../../assets/images/stop-record.png')} /> : <Image style={styles.iconImage} source={require('../../assets/images/microphone.png')} />}
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.commonIconButton} onPress={playSound} disabled={!soundUri}>
-                                    <Image style={styles.playIconImage} source={require('../../assets/images/play-audio.png')} />
-                                </TouchableOpacity>
-                            </View>
-                            {soundUri && (
-                                <Text style={styles.audioFileName}>{getFileName(soundUri)}</Text>
-                            )}
-                            <Text style={styles.dropDownTitle}>Short notes</Text>
-                            <TextInput
-                                multiline
-                                style={styles.textInput}
-                                numberOfLines={10}
-                                value={values.note}
-                                onChangeText={(text) => setFieldValue('note', text)}
-                            />
-                            <Text style={styles.dropDownTitle}>Transcribe notes</Text>
-                            <TextInput
-                                multiline
-                                style={styles.textInput}
-                                numberOfLines={10}
-                                value={values.transcribedNote}
-                                editable={false}
-                            />
-                        </View>
-                    )}
-                    {currentStep === 3 && (
-                        <View>
-                            <Text style={styles.dropDownTitle}>Diagnoses</Text>
-                            <FlatList
-                                data={values.diagnoses}
-                                keyExtractor={(item, index) => index.toString()}
-                                renderItem={({ item, index }) => (
-                                    <View style={styles.diagnosisItem}>
-                                        <TextInput
-                                            style={styles.diagnosisTextInput}
-                                            value={item}
-                                            onChangeText={(text) => {
-                                                const updatedDiagnoses: string[] = [...values.diagnoses];
-                                                updatedDiagnoses[index] = text;
-                                                setFieldValue('diagnoses', updatedDiagnoses);
-                                            }}
+                                    {isDatePickerVisible && (
+                                        <DateTimePickerComponent
+                                            mode="date"
+                                            value={selectedDate}
+                                            onChange={(event, date) => handleDateChange(event, date, setFieldValue)}
                                         />
-                                        <View style={styles.diagnosisButtonContainer}>
-                                            {index !== 0 && (
-                                                <TouchableOpacity
-                                                    onPress={() => {
-                                                        const updatedDiagnoses: string[] = values.diagnoses.filter((_, i) => i !== index);
+                                    )}
+
+                                    {isTimePickerVisible && (
+                                        <DateTimePickerComponent
+                                            mode="time"
+                                            value={selectedDate}
+                                            onChange={(event, time) => handleTimeChange(event, time, setFieldValue)}
+                                        />
+                                    )}
+
+                                    <DropDown
+                                        title="Sensitivity"
+                                        placeholder="Select Sensitivity"
+                                        items={sensitivity}
+                                        value={values.selectedSensitivity}
+                                        onValueChange={(value) => setFieldValue('selectedSensitivity', value)}
+                                    />
+                                </>
+                            )}
+                            {currentStep === 2 && (
+                                <View>
+                                    <View style={styles.audioButtonContainer}>
+                                        <TouchableOpacity onPress={recording ? stopRecording : startRecording} style={[styles.commonIconButton, recording ? styles.stopRecordButton : styles.iconButton]}>
+                                            {/* <TouchableOpacity onPress={recording ? stopRecording : startRecording} style={[styles.commonIconButton, recording ? styles.stopRecordButton : styles.iconButton]}> */}
+                                            {recording ? <Image style={styles.iconImage} source={require('../../assets/images/stop-record.png')} /> : <Image style={styles.iconImage} source={require('../../assets/images/microphone.png')} />}
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={styles.commonIconButton} onPress={playSound} disabled={!soundUri}>
+                                            <Image style={styles.playIconImage} source={require('../../assets/images/play-audio.png')} />
+                                        </TouchableOpacity>
+                                    </View>
+                                    {soundUri && (
+                                        <Text style={styles.audioFileName}>{getFileName(soundUri)}</Text>
+                                    )}
+                                    <Text style={styles.dropDownTitle}>Short notes</Text>
+                                    <TextInput
+                                        multiline
+                                        style={styles.textInput}
+                                        numberOfLines={10}
+                                        value={values.note}
+                                        onChangeText={(text) => setFieldValue('note', text)}
+                                    />
+                                    <Text style={styles.dropDownTitle}>Transcribe notes</Text>
+                                    <TextInput
+                                        multiline
+                                        style={styles.textInput}
+                                        numberOfLines={10}
+                                        value={values.transcribedNote}
+                                        editable={false}
+                                    />
+                                </View>
+                            )}
+                            {currentStep === 3 && (
+                                <View>
+                                    <Text style={styles.dropDownTitle}>Diagnoses</Text>
+                                    <FlatList
+                                        data={values.diagnoses}
+                                        keyExtractor={(item, index) => index.toString()}
+                                        renderItem={({ item, index }) => (
+                                            <View style={styles.diagnosisItem}>
+                                                <TextInput
+                                                    style={styles.diagnosisTextInput}
+                                                    value={item}
+                                                    onChangeText={(text) => {
+                                                        const updatedDiagnoses: string[] = [...values.diagnoses];
+                                                        updatedDiagnoses[index] = text;
                                                         setFieldValue('diagnoses', updatedDiagnoses);
                                                     }}
-                                                    style={styles.removeButton}
-                                                >
-                                                    <Text style={styles.diagnosisButtonText}>-</Text>
-                                                </TouchableOpacity>
-                                            )}
+                                                />
+                                                <View style={styles.diagnosisButtonContainer}>
+                                                    {index !== 0 && (
+                                                        <TouchableOpacity
+                                                            onPress={() => {
+                                                                const updatedDiagnoses: string[] = values.diagnoses.filter((_, i) => i !== index);
+                                                                setFieldValue('diagnoses', updatedDiagnoses);
+                                                            }}
+                                                            style={styles.removeButton}
+                                                        >
+                                                            <Text style={styles.diagnosisButtonText}>-</Text>
+                                                        </TouchableOpacity>
+                                                    )}
 
-                                            {index === values.diagnoses.length - 1 && (
-                                                <TouchableOpacity
-                                                    onPress={() => setFieldValue('diagnoses', [...values.diagnoses, ''])}
-                                                    style={styles.addButton}
-                                                >
-                                                    <Text style={styles.diagnosisButtonText}>+</Text>
-                                                </TouchableOpacity>
-                                            )}
-                                        </View>
+                                                    {index === values.diagnoses.length - 1 && (
+                                                        <TouchableOpacity
+                                                            onPress={() => setFieldValue('diagnoses', [...values.diagnoses, ''])}
+                                                            style={styles.addButton}
+                                                        >
+                                                            <Text style={styles.diagnosisButtonText}>+</Text>
+                                                        </TouchableOpacity>
+                                                    )}
+                                                </View>
+                                            </View>
+                                        )}
+                                    />
+                                    {/* Fee Code */}
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        {/* <Text style={styles.dropDownTitle}>Fee Code</Text>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                            <TouchableOpacity
+                                                onPress={() => setFieldValue('feeCode', [...values.feeCode, { value: '', charge: '', units: '' }])}
+                                                style={styles.addButton}
+                                            >
+                                                <Text style={styles.diagnosisButtonText}>+</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    if (values.feeCode.length > 1) {
+                                                        setFieldValue('feeCode', values.feeCode.slice(0, -1));
+                                                    }
+                                                }}
+                                                disabled={values.feeCode.length === 1}
+                                                style={styles.removeButton}
+                                            >
+                                                <Text style={styles.diagnosisButtonText}>-</Text>
+                                            </TouchableOpacity>
+                                        </View> */}
                                     </View>
-                                )}
-                            />
+                                    <FieldArray name="feeCode">
+                                        {({ insert, remove }) => (
+                                            <>
+                                                {values.feeCode.map((item, index) => (
+                                                    <View key={index}>
+                                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                                            <Text style={styles.dropDownTitle}>Fee Code</Text>
+                                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                                                <TouchableOpacity
+                                                                    onPress={() => setFieldValue('feeCode', [...values.feeCode, { value: '', charge: '', units: '' }])}
+                                                                    style={styles.addButton}
+                                                                >
+                                                                    <Text style={styles.diagnosisButtonText}>+</Text>
+                                                                </TouchableOpacity>
+                                                                <TouchableOpacity
+                                                                    onPress={() => {
+                                                                        if (values.feeCode.length > 1) {
+                                                                            setFieldValue('feeCode', values.feeCode.slice(0, -1));
+                                                                        }
+                                                                    }}
+                                                                    disabled={values.feeCode.length === 1}
+                                                                    style={styles.removeButton}
+                                                                >
+                                                                    <Text style={styles.diagnosisButtonText}>-</Text>
+                                                                </TouchableOpacity>
+                                                            </View>
+                                                        </View>
+                                                        <View style={styles.dropDown}>
+                                                            <RNPickerSelect
+                                                                onValueChange={(value) => {
+                                                                    // Find the selected feeCode object from feeCodes
+                                                                    const selectedFeeCode = feeCodes.find(code => code.value === value);
+                                                                    if (selectedFeeCode) {
+                                                                        // Update feeCode array with selected value
+                                                                        const updatedFeeCodes = [...values.feeCode];
+                                                                        updatedFeeCodes[index] = { ...selectedFeeCode }; // Ensure a new object is created
+                                                                        setFieldValue('feeCode', updatedFeeCodes);
+                                                                    }
+                                                                }}
+                                                                items={feeCodes.map((code) => ({
+                                                                    label: code.label,
+                                                                    value: code.value
+                                                                }))}
+                                                                value={item.value}
+                                                            />
+                                                        </View>
 
-                            <DropDown
-                                title="Fee Code"
-                                placeholder="Select Fee Code"
-                                items={feeCodes}
-                                value={values.feeCode}
-                                onValueChange={(value) => setFieldValue('feeCode', value)}
-                            />
+                                                        <Text style={styles.dropDownTitle}>Charge (CAD - $)</Text>
+                                                        <TextInput
+                                                            style={styles.dropDown}
+                                                            value={item.charge}
+                                                            onChangeText={(text) => {
+                                                                const updatedFeeCodes = [...values.feeCode];
+                                                                updatedFeeCodes[index] = {
+                                                                    ...updatedFeeCodes[index], // Keep other properties
+                                                                    charge: text // Update only the charge
+                                                                };
+                                                                setFieldValue('feeCode', updatedFeeCodes);
+                                                            }}
+                                                        />
+                                                        <Text style={styles.dropDownTitle}>Units</Text>
+                                                        <TextInput
+                                                            style={styles.dropDown}
+                                                            value={String(item.units)}
+                                                            onChangeText={(text) => {
+                                                                const updatedFeeCodes = [...values.feeCode];
+                                                                updatedFeeCodes[index] = {
+                                                                    ...updatedFeeCodes[index], // Keep other properties
+                                                                    units: Number(text) // Update only the units
+                                                                };
+                                                                setFieldValue('feeCode', updatedFeeCodes);
+                                                            }}
+                                                        />
+                                                    </View>
+                                                ))}
+                                            </>
+                                        )}
+                                    </FieldArray>
 
 
-                            <Text style={styles.dropDownTitle}>Charge (CAD - $)</Text>
-                            <TextInput
-                                style={styles.dropDown}
-                                value={values.charge}
-                                onChangeText={(text) => setFieldValue('charge', text)}
-                            />
-                            <Text style={styles.dropDownTitle}>Units</Text>
-                            <TextInput
-                                style={styles.dropDown}
-                                value={values.units}
-                                onChangeText={(text) => setFieldValue('units', text)}
-                            />
+                                </View>
+                            )}
+                            <View style={styles.buttonContainer}>
+                                <TouchableOpacity
+                                    onPress={goToPreviousStep}
+                                    style={[styles.button, styles.previousButton]}
+                                    disabled={currentStep === 1}
+                                >
+                                    <Text style={styles.buttonText}>Previous</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => goToNextStep(handleSubmit)}
+                                    style={styles.button}
+                                >
+                                    <Text style={styles.buttonText}>{currentStep === 3 ? 'Submit' : 'Next'}</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                    )}
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            onPress={goToPreviousStep}
-                            style={[styles.button, styles.previousButton]}
-                            disabled={currentStep === 1}
-                        >
-                            <Text style={styles.buttonText}>Previous</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => goToNextStep(handleSubmit)}
-                            style={styles.button}
-                        >
-                            <Text style={styles.buttonText}>{currentStep === 3 ? 'Submit' : 'Next'}</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            )}
-        </Formik>
+                    )
+                }}
+            </Formik>
+        </ScrollView>
     );
 };
 

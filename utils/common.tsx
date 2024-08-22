@@ -28,9 +28,14 @@ export const sensitivity = [
 export const feeCodes = [{
     label: '98031-LFP Direct Office Visit 25',
     value: '98031',
+    charge: '0.00',
+    units: 1
+
 },
 {
     label: '98032-LFP Virtual Visit 25',
     value: '98032',
+    charge: '0.00',
+    units: 1
 }
 ]
