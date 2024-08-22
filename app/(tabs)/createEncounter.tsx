@@ -5,7 +5,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { Audio, AVPlaybackStatus } from 'expo-av';
-import { visitCategory, facilities, sensitivity } from '../../utils/common';
+import { visitCategory, facilities, sensitivity, feeCodes } from '../../utils/common';
 
 interface FormValues {
     selectedVisitCategory: string;
@@ -151,6 +151,7 @@ const CreateEncounter: React.FC = () => {
     };
 
     const startRecording = async () => {
+        setRecording(null)
         try {
             const { status } = await Audio.requestPermissionsAsync();
             if (status !== 'granted') {
@@ -201,6 +202,13 @@ const CreateEncounter: React.FC = () => {
         }
     };
 
+    const getFileName = (uri: string | null): string => {
+        if (uri) {
+            return uri.split('/').pop() || '';
+        }
+        return '';
+    };
+
     return (
         <Formik
             initialValues={{
@@ -211,7 +219,7 @@ const CreateEncounter: React.FC = () => {
                 selectedSensitivity: '',
                 note: '',
                 transcribedNote: '',
-                diagnoses: [],
+                diagnoses: [''],
                 feeCode: '',
                 charge: '',
                 units: ''
@@ -284,14 +292,18 @@ const CreateEncounter: React.FC = () => {
                     )}
                     {currentStep === 2 && (
                         <View>
-                            <View>
-                                <TouchableOpacity onPress={recording ? stopRecording : startRecording}>
-                                    <Text>{recording ? 'Stop Recording' : 'Start Recording'}</Text>
+                            <View style={styles.audioButtonContainer}>
+                                <TouchableOpacity onPress={recording ? stopRecording : startRecording} style={[styles.commonIconButton, recording ? styles.stopRecordButton : styles.iconButton]}>
+                                    {/* <TouchableOpacity onPress={recording ? stopRecording : startRecording} style={[styles.commonIconButton, recording ? styles.stopRecordButton : styles.iconButton]}> */}
+                                    {recording ? <Image style={styles.iconImage} source={require('../../assets/images/stop-record.png')} /> : <Image style={styles.iconImage} source={require('../../assets/images/microphone.png')} />}
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={playSound} disabled={!soundUri}>
-                <Text>Play Recording</Text>
-            </TouchableOpacity>
+                                <TouchableOpacity style={styles.commonIconButton} onPress={playSound} disabled={!soundUri}>
+                                    <Image style={styles.playIconImage} source={require('../../assets/images/play-audio.png')} />
+                                </TouchableOpacity>
                             </View>
+                            {soundUri && (
+                                <Text style={styles.audioFileName}>{getFileName(soundUri)}</Text>
+                            )}
                             <Text style={styles.dropDownTitle}>Short notes</Text>
                             <TextInput
                                 multiline
@@ -328,31 +340,40 @@ const CreateEncounter: React.FC = () => {
                                             }}
                                         />
                                         <View style={styles.diagnosisButtonContainer}>
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    const updatedDiagnoses: string[] = values.diagnoses.filter((_, i) => i !== index);
-                                                    setFieldValue('diagnoses', updatedDiagnoses);
-                                                }}
-                                                style={styles.removeButton}
-                                            >
-                                                <Text style={styles.diagnosisButtonText}>-</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                onPress={() => setFieldValue('diagnoses', [...values.diagnoses, ''])}
-                                                style={styles.addButton}
-                                            >
-                                                <Text style={styles.diagnosisButtonText}>+</Text>
-                                            </TouchableOpacity>
+                                            {index !== 0 && (
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        const updatedDiagnoses: string[] = values.diagnoses.filter((_, i) => i !== index);
+                                                        setFieldValue('diagnoses', updatedDiagnoses);
+                                                    }}
+                                                    style={styles.removeButton}
+                                                >
+                                                    <Text style={styles.diagnosisButtonText}>-</Text>
+                                                </TouchableOpacity>
+                                            )}
+
+                                            {index === values.diagnoses.length - 1 && (
+                                                <TouchableOpacity
+                                                    onPress={() => setFieldValue('diagnoses', [...values.diagnoses, ''])}
+                                                    style={styles.addButton}
+                                                >
+                                                    <Text style={styles.diagnosisButtonText}>+</Text>
+                                                </TouchableOpacity>
+                                            )}
                                         </View>
                                     </View>
                                 )}
                             />
-                            <Text style={styles.dropDownTitle}>Fee Code</Text>
-                            <TextInput
-                                style={styles.dropDown}
+
+                            <DropDown
+                                title="Fee Code"
+                                placeholder="Select Fee Code"
+                                items={feeCodes}
                                 value={values.feeCode}
-                                onChangeText={(text) => setFieldValue('feeCode', text)}
+                                onValueChange={(value) => setFieldValue('feeCode', value)}
                             />
+
+
                             <Text style={styles.dropDownTitle}>Charge (CAD - $)</Text>
                             <TextInput
                                 style={styles.dropDown}
@@ -505,7 +526,6 @@ const styles = StyleSheet.create({
     },
     iconButton: {
         shadowColor: 'blue',
-        marginHorizontal: 20,
     },
     deleteIconButton: {
         shadowColor: 'red',
@@ -521,6 +541,25 @@ const styles = StyleSheet.create({
         width: 25,
         height: 25,
     },
+    playIconImage: {
+        width: 65,
+        height: 65,
+    },
+    audioButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        alignItems: 'center',
+        marginVertical: 10
+    },
+    audioFileName: {
+        textAlign: 'center',
+        fontSize: 16,
+        color: 'gray',
+        marginBottom: 10,
+    },
+    stopRecordButton: {
+        shadowColor: 'red',
+    }
 });
 
 export default CreateEncounter;
