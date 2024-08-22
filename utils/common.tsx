@@ -1,9 +1,17 @@
 export const visitCategory = [
     { label: 'LFP Virtual', value: 'LFP_Virtual' },
-    { label: 'LFP Direct', value: 'LFP_Direct' },
+    { label: 'Private Office', value: 'Private_Office' },
+    { label: 'LFP Office', value: 'LFP_Office' },
+    { label: 'LFP Emergency/Home', value: 'LFP_Emergency' },
+    { label: 'FFS Virtual', value: 'FFS_Virtual' },
+    { label: 'FFS Office', value: 'FFS_Office' },
+    { label: 'FFS Emergency/Home', value: 'FFS_Emergency' },
+    { label: 'Private Virtual', value: 'Private_Virtual' },
     { label: 'Pilot Exam', value: 'Pilot_Exam' },
-    { label: 'FFS Direct', value: 'FFS_Direct' },
-    { label: 'FFS Virtual', value: 'FFS_Virtual' }
+    { label: 'Influenza Vaccine', value: 'Influenza_Vaccine' },
+    { label: 'LFP Indirect Care', value: 'LFP_Indirect_Care' },
+    { label: 'LFP Admin', value: 'LFP_Admin' },
+    { label: 'Reserved', value: 'Reserved' },
 ];
 
 export const facilities = [
@@ -16,3 +24,4 @@ export const sensitivity = [
     { label: 'High', value: 'high' },
     { label: 'None', value: 'none' }
 ];
+
